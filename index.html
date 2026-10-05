@@ -56,5 +56,83 @@ body {
     overflow-y: auto;
 }
 
+.game-shell {
+    width: min(100%, 520px);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    position: relative;
+}
+
+.touch-pad {
+    display: none !important;
+}
+
+.hud-top {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.game-title {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.title-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--beige);
+}
+
+.title-text--accent {
+    color: var(--beige-dim);
+    font-weight: normal;
+}
+
+.score-board {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 20px;
+    padding: 8px 14px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+}
+
+.score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 68px;
+    gap: 2px;
+}
+
+.score-label {
+    font-size: 0.8rem;
+    color: var(--beige-dim);
+}
+
+.score-value {
+    font-size: 1.1rem;
+    color: var(--beige);
+}
+
+.score-value.bump {
+    opacity: 0.6;
+}
+
+#level { color: var(--beige-dim); }
+#goal  { color: var(--beige-dk); }
+
     </style>
 </head>
