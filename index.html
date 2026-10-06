@@ -134,5 +134,46 @@ body {
 #level { color: var(--beige-dim); }
 #goal  { color: var(--beige-dk); }
 
+.board-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 3px;
+}
+
+.game-board {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cells), 1fr);
+    grid-template-rows: repeat(var(--grid-cells), 1fr);
+    background: var(--cell-bg);
+    position: relative;
+}
+
+.cell {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.cell--body {
+    background: var(--beige-dk);
+    border: 1px solid var(--black);
+}
+
+.cell--tail {
+    background: var(--tail);
+    border: 1px solid var(--black);
+}
+
+.cell--head {
+    background: var(--beige);
+    border: 2px solid var(--black);
+}
+
     </style>
 </head>
