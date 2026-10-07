@@ -251,5 +251,73 @@ body {
     border: 1px solid var(--wall-line);
 }
 
+.overlay {
+    position: absolute;
+    inset: 3px;
+    background: rgba(17, 17, 17, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay--visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.overlay__inner {
+    padding: 18px;
+    max-width: 88%;
+    background: var(--panel);
+    border: 1px solid var(--beige-dim);
+}
+
+.overlay__inner h2 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    color: var(--beige);
+    line-height: 1.3;
+}
+
+.overlay__inner p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--beige-dim);
+    margin-bottom: 14px;
+}
+
+.overlay__inner .kbd-inline {
+    display: inline-block;
+    padding: 0 4px;
+    background: var(--bg);
+    color: var(--beige);
+    border: 1px solid var(--beige-dim);
+    font-size: 0.9em;
+}
+
+.overlay.is-gameover h2 {
+    color: var(--grey);
+}
+
+.btn-primary {
+    appearance: none;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    background: var(--beige);
+    color: var(--black);
+    border: 1px solid var(--black);
+    padding: 8px 16px;
+}
+.btn-primary:hover {
+    background: var(--beige-dim);
+}
+.btn-primary:active {
+    background: var(--beige-dk);
+}
+
     </style>
 </head>
