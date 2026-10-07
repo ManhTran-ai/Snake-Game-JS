@@ -175,5 +175,81 @@ body {
     border: 2px solid var(--black);
 }
 
+.cell--head::before {
+    content: "";
+    position: absolute;
+    width: 22%;
+    height: 22%;
+    top: 14%;
+    right: 14%;
+    background: var(--black);
+}
+
+.cell--head::after {
+    content: "";
+    position: absolute;
+    width: 25%;
+    height: 25%;
+    top: 37.5%;
+    left: 100%;
+    background: var(--beige);
+    border: 1px solid var(--black);
+    display: none;
+}
+.cell--head.tongue-out::after {
+    display: block;
+}
+
+.cell--head[data-direction="UP"]::before {
+    top: 64%;
+    right: 64%;
+}
+.cell--head[data-direction="UP"]::after {
+    top: 37.5%;
+    left: 62.5%;
+}
+
+.cell--head[data-direction="DOWN"]::before {
+    top: 14%;
+    right: 14%;
+}
+.cell--head[data-direction="DOWN"]::after {
+    top: 62.5%;
+    left: 14%;
+}
+
+.cell--head[data-direction="LEFT"]::before {
+    top: 14%;
+    right: 64%;
+}
+.cell--head[data-direction="LEFT"]::after {
+    top: 37.5%;
+    left: 12.5%;
+}
+
+.cell--food {
+    background: var(--beige);
+    border: 2px solid var(--black);
+}
+.cell--food::before {
+    content: "";
+    position: absolute;
+    width: 22%;
+    height: 22%;
+    top: 12%;
+    left: 39%;
+    background: var(--grey);
+}
+
+.cell--head.game-over-flash {
+    background: var(--grey);
+    border-color: var(--beige);
+}
+
+.cell--wall {
+    background: var(--wall);
+    border: 1px solid var(--wall-line);
+}
+
     </style>
 </head>
