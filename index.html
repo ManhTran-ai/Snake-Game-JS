@@ -371,5 +371,47 @@ kbd {
     background: #0a0a0a;
 }
 
+.cell--portal-a,
+.cell--portal-b {
+    background: var(--bg);
+    border: 2px solid var(--beige);
+}
+.cell--portal-b {
+    border-width: 3px;
+    border-color: var(--beige-dim);
+}
+
+.cell--food-reverse {
+    background: var(--beige-dim);
+    border: 2px solid var(--black);
+}
+.cell--food-speed {
+    background: var(--white);
+    border: 2px solid var(--black);
+}
+
+.toast {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: max-content;
+    max-width: 90%;
+    background: var(--panel);
+    color: var(--beige);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border: 1px solid var(--beige);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+    white-space: nowrap;
+}
+.toast.is-visible {
+    opacity: 1;
+}
+
     </style>
 </head>
