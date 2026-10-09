@@ -413,5 +413,55 @@ kbd {
     opacity: 1;
 }
 
+.cell--enemy {
+    background: var(--black);
+    border: 2px solid var(--beige);
+    z-index: 4;
+}
+
+.cell--enemy-chase {
+    background: #2b2b2b;
+    border: 3px solid var(--beige);
+    outline: 1px solid var(--black);
+}
+
+.cell--enemy-warning {
+    border: 2px dashed #555555;
+    z-index: 1;
+}
+
+.cell--fog {
+    background: rgba(0, 0, 0, 0.92) !important;
+    border-color: #1a1a1a;
+}
+.cell--fog.cell--head,
+.cell--fog.cell--body,
+.cell--fog.cell--tail,
+.cell--fog.cell--enemy,
+.cell--fog.cell--food {
+    opacity: 0.1;
+}
+
+.cell--arena-wall {
+    background: #2a2a2a;
+    border: 1px solid var(--wall-line);
+    z-index: 0;
+}
+
+.score-item--hp {
+    min-width: 56px;
+}
+.hp-value {
+    font-size: 1.1rem;
+    color: var(--beige);
+}
+.hp-value .hp-full  { color: var(--beige); }
+.hp-value .hp-empty { color: #4a4a4a; }
+
+.cell--invulnerable {
+    outline: 2px solid var(--white);
+    outline-offset: -2px;
+}
+
     </style>
 </head>
