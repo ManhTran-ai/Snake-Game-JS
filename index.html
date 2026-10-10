@@ -463,5 +463,118 @@ kbd {
     outline-offset: -2px;
 }
 
+.main-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg);
+    overflow-y: auto;
+}
+.main-menu--visible {
+    display: flex;
+}
+
+.main-menu__inner {
+    max-width: 1000px;
+    width: 100%;
+    text-align: center;
+}
+
+.menu-title {
+    font-size: 2rem;
+    color: var(--beige);
+    margin-bottom: 6px;
+}
+.menu-subtitle {
+    color: var(--beige-dim);
+    font-size: 1rem;
+    margin-bottom: 24px;
+}
+
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.level-card {
+    --card-accent: #e8dcc8;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    text-align: left;
+    cursor: pointer;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--beige);
+    font-family: inherit;
+    position: relative;
+}
+.level-card:hover,
+.level-card:focus-visible {
+    border-color: var(--card-accent);
+    outline: none;
+}
+
+.level-card__num {
+    font-size: 0.85rem;
+    color: var(--card-accent);
+}
+.level-card__name {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: var(--beige);
+    line-height: 1.3;
+}
+.level-card__desc {
+    font-size: 0.9rem;
+    color: var(--beige-dim);
+    line-height: 1.5;
+    flex-grow: 1;
+}
+.level-card__meta {
+    font-size: 0.85rem;
+    color: var(--beige);
+}
+.level-card__cta {
+    font-size: 0.85rem;
+    color: var(--card-accent);
+}
+
+.theme-grassland { --card-accent: #e8dcc8; }
+.theme-dungeon   { --card-accent: #d8ccb4; }
+.theme-portal    { --card-accent: #c8bca4; }
+.theme-haunted   { --card-accent: #b8ab97; }
+.theme-matrix    { --card-accent: #a89c86; }
+.theme-shadow    { --card-accent: #8a7f6d; }
+
+.menu-hint {
+    color: var(--beige-dim);
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+.btn-secondary {
+    margin-top: 10px;
+    padding: 7px 14px;
+    background: var(--panel);
+    color: var(--beige-dim);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+    color: var(--beige);
+    border-color: var(--beige-dim);
+    outline: none;
+}
     </style>
 </head>
