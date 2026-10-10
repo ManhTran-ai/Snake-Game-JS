@@ -578,3 +578,36 @@ kbd {
 }
     </style>
 </head>
+<body>
+    <main class="game-shell arcade-cabinet">
+        <header class="hud-top">
+            <h1 class="game-title">
+                <span class="title-text">8-BIT</span>
+                <span class="title-text title-text--accent">SNAKE</span>
+            </h1>
+            <div class="score-board" role="status" aria-live="polite">
+                <div class="score-item">
+                    <span class="score-label">ĐIỂM</span>
+                    <span id="score" class="score-value">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">MÀN</span>
+                    <span id="level" class="score-value">1/5</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">MỤC TIÊU</span>
+                    <span id="goal" class="score-value">100</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">KỶ LỤC</span>
+                    <span id="high-score" class="score-value">0</span>
+                </div>
+                <div class="score-item score-item--hp" id="hp-item" hidden>
+                    <span class="score-label">MÁU</span>
+                    <span id="hp" class="score-value hp-value"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="board-wrapper">
+            <div id="game-board" class="game-board" role="grid" aria-label="Bàn chơi rắn săn mồi 20x20"></div>
