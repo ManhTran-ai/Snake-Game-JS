@@ -611,3 +611,35 @@ kbd {
 
         <div class="board-wrapper">
             <div id="game-board" class="game-board" role="grid" aria-label="Bàn chơi rắn săn mồi 20x20"></div>
+
+            <div id="toast" class="toast" aria-live="polite"></div>
+
+            <div id="overlay" class="overlay overlay--visible" aria-live="assertive">
+                <div class="overlay__inner">
+                    <h2 id="overlay-title">SẴN SÀNG CHƠI?</h2>
+                    <p id="overlay-message">Nhấn phím <span class="kbd-inline">Space</span> để bắt đầu.</p>
+                    <button id="overlay-action" type="button" class="btn-primary">BẮT ĐẦU</button>
+                    <button id="overlay-back" type="button" class="btn-secondary">⬅ VỀ MENU CHÍNH</button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="hud-bottom">
+            <p class="hint">
+                <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> hoặc <kbd>WASD</kbd> &nbsp;·&nbsp;
+                <kbd>P</kbd> / <kbd>Space</kbd>: Tạm dừng &nbsp;·&nbsp; <kbd>R</kbd>: Chơi lại &nbsp;·&nbsp;
+                <kbd>ESC</kbd>: Về menu chính
+            </p>
+        </footer>
+    </main>
+
+    <section id="main-menu" class="main-menu main-menu--visible" aria-label="Menu chọn màn chơi">
+        <div class="main-menu__inner">
+            <h2 class="menu-title">CHỌN MÀN CHƠI</h2>
+            <div class="level-grid" id="level-grid">
+            </div>
+            <p class="menu-hint">
+                 nhấn <kbd>ESC</kbd> để thoát và chọn màn chơi
+            </p>
+        </div>
+    </section>
