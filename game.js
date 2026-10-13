@@ -209,3 +209,106 @@ function saveHighScore(value) {
     } catch (_) {
     }
 }
+
+const SCROLL_KEYS = new Set([
+    "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "Spacebar",
+]);
+
+const KEY_TO_DIR = {
+    ArrowUp:    DIRECTIONS.UP,
+    w:          DIRECTIONS.UP,
+    W:          DIRECTIONS.UP,
+    ArrowDown:  DIRECTIONS.DOWN,
+    s:          DIRECTIONS.DOWN,
+    S:          DIRECTIONS.DOWN,
+    ArrowLeft:  DIRECTIONS.LEFT,
+    a:          DIRECTIONS.LEFT,
+    A:          DIRECTIONS.LEFT,
+    ArrowRight: DIRECTIONS.RIGHT,
+    d:          DIRECTIONS.RIGHT,
+    D:          DIRECTIONS.RIGHT,
+};
+
+function setupKeyboard(game) {
+    window.addEventListener("keydown", (e) => {
+        if (SCROLL_KEYS.has(e.key)) e.preventDefault();
+
+        const key = e.key;
+        if (key === " " || key === "Spacebar") {
+            if (game.state === "menu") {
+                return;
+            }
+            if (game.state === "idle" || game.state === "gameover" || game.state === "win") {
+                game.start();
+            } else if (game.state === "paused") {
+                if (game.score === 0 && game.tickCount === 0) {
+                    game.start();
+                } else {
+                    game.togglePause();
+                }
+            }
+            return;
+        }
+        if (key === "p" || key === "P") {
+            if (game.state === "running" || game.state === "paused") {
+                game.togglePause();
+            }
+            return;
+        }
+        if (key === "r" || key === "R") {
+            if (game.state === "menu") return;
+            game.start();
+            return;
+        }
+
+        if (key === "Escape") {
+            if (game.state === "menu") return;
+            game.backToMenu();
+            return;
+        }
+
+        handleDirKey(game, key);
+    });
+}
+
+const REVERSE_KEY_TO_DIR = {
+    ArrowUp:    DIRECTIONS.DOWN,
+    ArrowDown:  DIRECTIONS.UP,
+    ArrowLeft:  DIRECTIONS.RIGHT,
+    ArrowRight: DIRECTIONS.LEFT,
+    w: DIRECTIONS.DOWN, W: DIRECTIONS.DOWN,
+    s: DIRECTIONS.UP, S: DIRECTIONS.UP,
+    a: DIRECTIONS.RIGHT, A: DIRECTIONS.RIGHT,
+    d: DIRECTIONS.LEFT, D: DIRECTIONS.LEFT,
+};
+
+function handleDirKey(game, key) {
+    const reversed = game.powerUps?.isReversed();
+    const map = reversed ? REVERSE_KEY_TO_DIR : KEY_TO_DIR;
+    const dir = map[key];
+    if (dir && game.state === "running") {
+        game.snake.queueDirection(dir);
+    }
+}
+
+function setupTouchPad(game) {
+    const buttons = document.querySelectorAll(".touch-btn");
+    buttons.forEach((btn) => {
+        btn.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            const action = btn.dataset.action;
+            if (action === "PAUSE") {
+                if (game.state === "running" || game.state === "paused") {
+                    game.togglePause();
+                } else if (game.state === "idle" || game.state === "gameover") {
+                    game.start();
+                }
+                return;
+            }
+            const dir = btn.dataset.direction;
+            if (dir && game.state === "running") {
+                game.snake.queueDirection(DIRECTIONS[dir]);
+            }
+        });
+    });
+}
