@@ -312,3 +312,136 @@ function setupTouchPad(game) {
         });
     });
 }
+
+class Snake {
+    constructor(gridSize, startLength) {
+        this.gridSize = gridSize;
+        this.wrapAround = false;
+        this.walls = [];
+        this.portalManager = null;
+        this.arena = null;
+        this.reset(startLength);
+    }
+
+    reset(startLength) {
+        const mid = Math.floor(this.gridSize / 2);
+        this.segments = [];
+        for (let i = 0; i < startLength; i++) {
+            this.segments.push({ x: mid - i, y: mid });
+        }
+        this.direction = DIRECTIONS.RIGHT;
+        this.pendingDirections = [];
+        this.isProcessingInput = false;
+        this.justAte = false;
+        this.poppedTail = null;
+    }
+
+    queueDirection(next) {
+        const current =
+            this.pendingDirections[this.pendingDirections.length - 1] ||
+            this.direction;
+
+        if (current.x + next.x === 0 && current.y + next.y === 0) return;
+        if (current.x === next.x && current.y === next.y) return;
+
+        if (this.pendingDirections.length >= 2) {
+            this.pendingDirections.shift();
+        }
+        this.pendingDirections.push(next);
+    }
+
+    _nextHead() {
+        const head = this.segments[0];
+        let newHead = {
+            x: head.x + this.direction.x,
+            y: head.y + this.direction.y,
+        };
+
+        if (this.wrapAround) {
+            newHead.x = (newHead.x + this.gridSize) % this.gridSize;
+            newHead.y = (newHead.y + this.gridSize) % this.gridSize;
+        }
+
+        if (this.portalManager) {
+            const exit = this.portalManager.teleport(newHead.x, newHead.y);
+            if (exit) newHead = exit;
+        }
+
+        return newHead;
+    }
+
+    advance() {
+        if (this.pendingDirections.length > 0 && !this.isProcessingInput) {
+            this.isProcessingInput = true;
+            this.direction = this.pendingDirections.shift();
+        }
+        this.isProcessingInput = false;
+
+        const newHead = this._nextHead();
+        this.segments.unshift(newHead);
+
+        if (this.justAte) {
+            this.justAte = false;
+            this.poppedTail = null;
+        } else {
+            this.poppedTail = this.segments.pop();
+        }
+        return newHead;
+    }
+
+    eat(points = 10) {
+        this.justAte = true;
+        return points;
+    }
+
+    revertAdvance() {
+        this.segments.shift();
+        if (this.poppedTail) {
+            this.segments.push(this.poppedTail);
+            this.poppedTail = null;
+        }
+    }
+
+    checkCollision(nextHead) {
+        if (!this.wrapAround) {
+            if (
+                nextHead.x < 0 ||
+                nextHead.y < 0 ||
+                nextHead.x >= this.gridSize ||
+                nextHead.y >= this.gridSize
+            ) {
+                return true;
+            }
+        }
+
+        if (this.arena && !this.arena.isInBounds(nextHead.x, nextHead.y)) {
+            return true;
+        }
+
+        if (this.walls && this.walls.length) {
+            for (const wall of this.walls) {
+                if (wall.x === nextHead.x && wall.y === nextHead.y) return true;
+            }
+        }
+
+        for (let i = 1; i < this.segments.length; i++) {
+            const seg = this.segments[i];
+            if (seg.x === nextHead.x && seg.y === nextHead.y) return true;
+        }
+        return false;
+    }
+
+    checkCollisionWithEnemies(enemyManager) {
+        if (!enemyManager || !enemyManager.enemies.length) return false;
+        const head = this.segments[0];
+        if (!head) return false;
+        for (const e of enemyManager.enemies) {
+            if (e.position.x === head.x && e.position.y === head.y) return true;
+        }
+        return false;
+    }
+
+    occupies(x, y) {
+        return this.segments.some((s) => s.x === x && s.y === y);
+    }
+}
