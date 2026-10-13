@@ -168,3 +168,44 @@ const LEVELS = [
         },
     },
 ];
+
+const CELL_CLASS = {
+    HEAD: "cell--head",
+    BODY: "cell--body",
+    TAIL: "cell--tail",
+    FOOD: "cell--food",
+    TONGUE_OUT: "tongue-out",
+    WALL: "cell--wall",
+    PORTAL: "cell--portal",
+    ENEMY: "cell--enemy",
+    ENEMY_WARNING: "cell--enemy-warning",
+    FOG: "cell--fog",
+    ARENA_WALL: "cell--arena-wall",
+    INVULNERABLE: "cell--invulnerable",
+    CHASE: "cell--enemy-chase",
+};
+
+function directionLabel(vec) {
+    if (vec.x === 1) return "RIGHT";
+    if (vec.x === -1) return "LEFT";
+    if (vec.y === 1) return "DOWN";
+    if (vec.y === -1) return "UP";
+    return "RIGHT";
+}
+
+function loadHighScore() {
+    try {
+        const raw = localStorage.getItem(HIGH_SCORE_KEY);
+        const n = parseInt(raw, 10);
+        return Number.isFinite(n) && n > 0 ? n : 0;
+    } catch (_) {
+        return 0;
+    }
+}
+
+function saveHighScore(value) {
+    try {
+        localStorage.setItem(HIGH_SCORE_KEY, String(value));
+    } catch (_) {
+    }
+}
