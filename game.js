@@ -445,3 +445,71 @@ class Snake {
         return this.segments.some((s) => s.x === x && s.y === y);
     }
 }
+
+const FOOD_TYPES = {
+    NORMAL:  { id: "NORMAL",  score: 10, cssClass: "cell--food",          emoji: "🍎" },
+    REVERSE: { id: "REVERSE", score: 25, cssClass: "cell--food-reverse", emoji: "🌀" },
+    SPEED:   { id: "SPEED",   score: 20, cssClass: "cell--food-speed",    emoji: "⚡" },
+};
+
+const VARIANT_PROBABILITY = {
+    REVERSE: 0.1,
+    SPEED:   0.1,
+};
+
+class Food {
+    constructor(gridSize) {
+        this.gridSize = gridSize;
+        this.position = { x: 0, y: 0 };
+        this.type = FOOD_TYPES.NORMAL;
+
+        this.tickSinceSpawn = 0;
+        this.maxLifetime = 0;
+    }
+
+    respawn(snake, walls = [], variants = false, portals = []) {
+        const free = [];
+        for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+                if (snake.occupies(x, y)) continue;
+                if (walls.some((w) => w.x === x && w.y === y)) continue;
+                if (portals.some((p) =>
+                    (p.a.x === x && p.a.y === y) ||
+                    (p.b.x === x && p.b.y === y)
+                )) continue;
+                free.push({ x, y });
+            }
+        }
+        if (free.length === 0) {
+            this.position = null;
+            return false;
+        }
+        this.position = free[Math.floor(Math.random() * free.length)];
+
+        if (variants) {
+            const r = Math.random();
+            if (r < VARIANT_PROBABILITY.REVERSE) {
+                this.type = FOOD_TYPES.REVERSE;
+            } else if (r < VARIANT_PROBABILITY.REVERSE + VARIANT_PROBABILITY.SPEED) {
+                this.type = FOOD_TYPES.SPEED;
+            } else {
+                this.type = FOOD_TYPES.NORMAL;
+            }
+        } else {
+            this.type = FOOD_TYPES.NORMAL;
+        }
+
+        this.tickSinceSpawn = 0;
+        return true;
+    }
+
+    tick(snake, walls, variants = false, portals = []) {
+        if (this.maxLifetime <= 0) return false;
+        this.tickSinceSpawn++;
+        if (this.tickSinceSpawn >= this.maxLifetime) {
+            this.respawn(snake, walls, variants, portals);
+            return true;
+        }
+        return false;
+    }
+}
