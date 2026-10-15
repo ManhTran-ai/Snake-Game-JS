@@ -592,3 +592,138 @@ class PowerUpManager {
         return Math.ceil(this.effects.speed / 1000);
     }
 }
+
+class Enemy {
+    constructor({ path, x, y, dir, behavior }) {
+        this.path = path;
+        this.x = x;
+        this.y = y;
+        this.dir = dir;
+        this.behavior = behavior ?? "patrol";
+        this.position = { x, y };
+        this.wanderChance = 0.15;
+    }
+
+    step(gridSize) {
+        this.behavior === "chase" ? this.stepChase(gridSize) : this.stepPatrol(gridSize);
+    }
+
+    stepPatrol(gridSize) {
+        if (this.path !== "horizontal" && this.path !== "vertical") {
+            const dirs = [
+                { x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 },
+            ];
+            const d = dirs[Math.floor(Math.random() * dirs.length)];
+            const nx = this.x + d.x;
+            const ny = this.y + d.y;
+            if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) return;
+            this.x = nx;
+            this.y = ny;
+            this.position = { x: this.x, y: this.y };
+            return;
+        }
+
+        if (this.path === "horizontal") {
+            this.x += this.dir;
+            if (this.x < 0 || this.x >= gridSize) {
+                this.dir = -this.dir;
+                this.x += this.dir * 2;
+            }
+        } else {
+            this.y += this.dir;
+            if (this.y < 0 || this.y >= gridSize) {
+                this.dir = -this.dir;
+                this.y += this.dir * 2;
+            }
+        }
+        this.position = { x: this.x, y: this.y };
+    }
+
+    stepChase(gridSize, target) {
+        if (!target) {
+            this.stepPatrol(gridSize);
+            return;
+        }
+        if (Math.random() < this.wanderChance) {
+            this.stepPatrol(gridSize);
+            return;
+        }
+
+        const candidates = [
+            { x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 },
+        ];
+        let best = null;
+        let bestDist = Infinity;
+        for (const c of candidates) {
+            const nx = this.x + c.x;
+            const ny = this.y + c.y;
+            if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) continue;
+            const dist = Math.abs(nx - target.x) + Math.abs(ny - target.y);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = { x: nx, y: ny };
+            }
+        }
+        if (best) {
+            this.x = best.x;
+            this.y = best.y;
+            this.path = null;
+            this.position = { x: this.x, y: this.y };
+        }
+    }
+
+    predict(gridSize, distance = 2) {
+        const result = [];
+        if (this.behavior === "chase") return result;
+
+        let px = this.x;
+        let py = this.y;
+        let pdir = this.dir;
+        for (let i = 0; i < distance; i++) {
+            if (this.path === "horizontal") {
+                px += pdir;
+                if (px < 0 || px >= gridSize) {
+                    pdir = -pdir;
+                    px += pdir * 2;
+                }
+            } else {
+                py += pdir;
+                if (py < 0 || py >= gridSize) {
+                    pdir = -pdir;
+                    py += pdir * 2;
+                }
+            }
+            result.push({ x: px, y: py });
+        }
+        return result;
+    }
+}
+
+class EnemyManager {
+    constructor(enemies = []) {
+        this.enemies = enemies;
+    }
+
+    step(gridSize, target = null) {
+        for (const e of this.enemies) {
+            e.behavior === "chase" ? e.stepChase(gridSize, target) : e.step(gridSize);
+        }
+    }
+
+    checkCollisionWithSnake(snake) {
+        const head = snake.segments[0];
+        if (!head) return false;
+        for (const e of this.enemies) {
+            if (e.position.x === head.x && e.position.y === head.y) return true;
+        }
+        return false;
+    }
+
+    reset() {
+        for (const e of this.enemies) {
+            e.x = e._startX ?? e.x;
+            e.y = e._startY ?? e.y;
+            e.position = { x: e.x, y: e.y };
+        }
+    }
+}
