@@ -513,3 +513,82 @@ class Food {
         return false;
     }
 }
+
+class PortalManager {
+    constructor(portals = []) {
+        this.portals = portals;
+    }
+
+    teleport(x, y) {
+        for (const p of this.portals) {
+            if (p.a.x === x && p.a.y === y) return { x: p.b.x, y: p.b.y };
+            if (p.b.x === x && p.b.y === y) return { x: p.a.x, y: p.a.y };
+        }
+        return null;
+    }
+
+    isPortal(x, y) {
+        return this.portals.some(
+            (p) =>
+                (p.a.x === x && p.a.y === y) ||
+                (p.b.x === x && p.b.y === y)
+        );
+    }
+
+    get count() {
+        return this.portals.length;
+    }
+}
+
+const POWERUP_DURATION_MS = 5000;
+
+class PowerUpManager {
+    constructor() {
+        this.effects = {
+            reversed: 0,
+            speed: 0,
+        };
+    }
+
+    reset() {
+        this.effects.reversed = 0;
+        this.effects.speed = 0;
+    }
+
+    update(deltaMs) {
+        if (this.effects.reversed > 0) {
+            this.effects.reversed = Math.max(0, this.effects.reversed - deltaMs);
+        }
+        if (this.effects.speed > 0) {
+            this.effects.speed = Math.max(0, this.effects.speed - deltaMs);
+        }
+    }
+
+    activateReverse() {
+        this.effects.reversed = POWERUP_DURATION_MS;
+    }
+
+    activateSpeed() {
+        this.effects.speed = POWERUP_DURATION_MS;
+    }
+
+    isReversed() {
+        return this.effects.reversed > 0;
+    }
+
+    isSpeedUp() {
+        return this.effects.speed > 0;
+    }
+
+    speedMultiplier() {
+        return this.isSpeedUp() ? 0.5 : 1.0;
+    }
+
+    reversedRemainingSecs() {
+        return Math.ceil(this.effects.reversed / 1000);
+    }
+
+    speedRemainingSecs() {
+        return Math.ceil(this.effects.speed / 1000);
+    }
+}
