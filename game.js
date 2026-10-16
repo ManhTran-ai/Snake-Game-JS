@@ -727,3 +727,75 @@ class EnemyManager {
         }
     }
 }
+
+class FogOfWar {
+    constructor(gridSize, radius = 4) {
+        this.gridSize = gridSize;
+        this.radius = radius;
+        this.enabled = false;
+    }
+
+    setEnabled(enabled) {
+        this.enabled = !!enabled;
+    }
+
+    visibleSet(headX, headY) {
+        const r = this.radius;
+        const r2 = r * r;
+        const visible = new Set();
+        for (let dy = -r; dy <= r; dy++) {
+            for (let dx = -r; dx <= r; dx++) {
+                if (dx * dx + dy * dy > r2) continue;
+                const x = headX + dx;
+                const y = headY + dy;
+                if (x < 0 || y < 0 || x >= this.gridSize || y >= this.gridSize) continue;
+                visible.add(`${x},${y}`);
+            }
+        }
+        return visible;
+    }
+}
+
+class Arena {
+    constructor(gridSize, minSize = 6) {
+        this.gridSize = gridSize;
+        this.minSize = Math.max(3, minSize);
+        this.minX = 0;
+        this.minY = 0;
+        this.maxX = gridSize - 1;
+        this.maxY = gridSize - 1;
+    }
+
+    shrink() {
+        if (this.maxX - this.minX < this.minSize) return false;
+        if (this.maxY - this.minY < this.minSize) return false;
+        this.minX++;
+        this.minY++;
+        this.maxX--;
+        this.maxY--;
+        return true;
+    }
+
+    isInBounds(x, y) {
+        return (
+            x >= this.minX &&
+            x <= this.maxX &&
+            y >= this.minY &&
+            y <= this.maxY
+        );
+    }
+
+    getActiveWalls() {
+        const walls = [];
+        for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+                if (!this.isInBounds(x, y)) walls.push({ x, y });
+            }
+        }
+        return walls;
+    }
+
+    area() {
+        return (this.maxX - this.minX + 1) * (this.maxY - this.minY + 1);
+    }
+}
