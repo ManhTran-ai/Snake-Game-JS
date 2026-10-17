@@ -799,3 +799,98 @@ class Arena {
         return (this.maxX - this.minX + 1) * (this.maxY - this.minY + 1);
     }
 }
+
+class LevelManager {
+    constructor(game) {
+        this.game = game;
+        this.currentIndex = 0;
+    }
+
+    get current() {
+        return LEVELS[this.currentIndex];
+    }
+
+    get total() {
+        return LEVELS.length;
+    }
+
+    loadLevel(index) {
+        if (index < 0 || index >= LEVELS.length) return;
+        this.currentIndex = index;
+        const cfg = LEVELS[index];
+
+        this.game.score = 0;
+        this.game.tickCount = 0;
+        this.game.tickInterval = cfg.tickMs;
+        this.game.accumulator = 0;
+
+        this.game.snake.reset(this.game.initialLength ?? 4);
+
+        this.applyConfigToSnake(cfg);
+
+        this.game.applyLevelConfig?.(cfg);
+
+        this.applyConfigToGame(cfg);
+
+        this.game.food.respawn(this.game.snake, cfg.walls ?? []);
+
+        this.game.updateScoreUI?.(false);
+    }
+
+    applyConfigToSnake(cfg) {
+        const s = this.game.snake;
+        s.wrapAround = !!cfg.wrapAround;
+        s.walls = cfg.walls ?? [];
+        s.portalManager = cfg.portals && cfg.portals.length
+            ? new PortalManager(cfg.portals)
+            : null;
+    }
+
+    applyConfigToGame(cfg) {
+        const g = this.game;
+
+        if (Array.isArray(cfg.enemies) && cfg.enemies.length) {
+            g.enemyManager = new EnemyManager(
+                cfg.enemies.map((e) => new Enemy(e))
+            );
+        } else {
+            g.enemyManager = null;
+        }
+
+        if (cfg.fogOfWar) {
+            if (!g.fog) g.fog = new FogOfWar(g.gridSize, cfg.fogRadius ?? 4);
+            else g.fog.radius = cfg.fogRadius ?? 4;
+            g.fog.setEnabled(true);
+        } else {
+            if (g.fog) g.fog.setEnabled(false);
+        }
+
+        if (cfg.shrinkInterval && cfg.shrinkInterval > 0) {
+            g.arena = new Arena(g.gridSize, cfg.arenaMinSize ?? 6);
+            g.snake.walls = g.arena.getActiveWalls();
+            g.snake.arena = g.arena;
+        } else {
+            g.arena = null;
+            g.snake.arena = null;
+        }
+
+        g.dynamicSpeed = cfg.dynamicSpeed ?? null;
+
+        g.food.maxLifetime = cfg.foodMaxLifetime ?? 0;
+        g.food.tickSinceSpawn = 0;
+    }
+
+    checkGoal() {
+        const cfg = this.current;
+        if (this.game.score < cfg.goalScore) {
+            return { advanced: false, finished: false, level: cfg };
+        }
+
+        if (this.currentIndex >= LEVELS.length - 1) {
+            return { advanced: false, finished: true, level: cfg };
+        }
+
+        this.loadLevel(this.currentIndex + 1);
+        return { advanced: true, finished: false, level: this.current };
+    }
+}
