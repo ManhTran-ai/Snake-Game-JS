@@ -894,3 +894,94 @@ class LevelManager {
         return { advanced: true, finished: false, level: this.current };
     }
 }
+
+const TONGUE_FLICK_INTERVAL = 6;
+
+const DIE_FLASH_MS = 600;
+
+class Game {
+    constructor(boardEl, cells, ui) {
+        this.boardEl = boardEl;
+        this.cells = cells;
+        this.ui = ui;
+
+        this.gridSize = GRID_SIZE;
+        this.snake = new Snake(GRID_SIZE, INITIAL_LENGTH);
+        this.food = new Food(GRID_SIZE);
+        this.initialLength = INITIAL_LENGTH;
+
+        this.score = 0;
+        this.highScore = loadHighScore();
+        this.tickInterval = LEVELS[0].tickMs;
+        this.accumulator = 0;
+        this.lastFrameTime = 0;
+        this.rafId = null;
+
+        this.tickCount = 0;
+        this.state = "idle";
+        this.eatGlow = 0;
+        this.dieTimer = null;
+
+        this.maxHp = 1;
+        this.hp = 1;
+        this.invulnUntil = 0;
+        this.hurtFlashTimer = null;
+
+        this.levels = new LevelManager(this);
+        this.levels.loadLevel(0);
+
+        this.powerUps = new PowerUpManager();
+        this.toast = { message: "", until: 0 };
+
+        setupKeyboard(this);
+        setupTouchPad(this);
+        this.setupOverlayButton();
+
+        this.updateScoreUI(false);
+        this.render();
+    }
+
+    applyLevelConfig(cfg) {
+        const shell = this.boardEl.parentElement;
+        if (shell) {
+            shell.classList.remove(
+                "theme-grassland", "theme-dungeon", "theme-portal",
+                "theme-haunted", "theme-matrix", "theme-shadow"
+            );
+            if (cfg.theme) shell.classList.add(`theme-${cfg.theme}`);
+        }
+        this.walls = cfg.walls ?? [];
+        this.portals = cfg.portals ?? [];
+        this.foodVariants = !!cfg.foodVariants;
+        this.fogRadius = cfg.fogRadius ?? 4;
+        this.enemyPredictDistance = cfg.enemyPredictDistance ?? 2;
+
+        this.shrinkInterval = cfg.shrinkInterval ?? 0;
+
+        this.maxHp = cfg.maxHp ?? 1;
+        this.hitInvulnMs = cfg.hitInvulnMs ?? 0;
+        this.hp = this.maxHp;
+        this.invulnUntil = 0;
+        this.updateHpUI?.();
+
+        if (this.powerUps) this.powerUps.reset();
+    }
+
+    takeDamage() {
+        if (performance.now() < this.invulnUntil) return false;
+
+        this.hp = Math.max(0, this.hp - 1);
+        this.invulnUntil = performance.now() + (this.hitInvulnMs || 0);
+        this.updateHpUI?.();
+
+        if (this.hp <= 0) return true;
+
+        this.showToast(`💔 TRÚNG ĐÒN! Còn ${this.hp} máu`);
+        return false;
+    }
+
+    get isInvulnerable() {
+        return performance.now() < this.invulnUntil;
+    }
+
+}
