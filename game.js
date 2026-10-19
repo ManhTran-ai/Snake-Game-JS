@@ -984,4 +984,71 @@ class Game {
         return performance.now() < this.invulnUntil;
     }
 
+    start() {
+        if (this.state === "running") return;
+        this.levels.loadLevel(this.levels.currentIndex);
+        this.updateScoreUI(false);
+        this.state = "running";
+        this.hideOverlay();
+        this.lastFrameTime = performance.now();
+        this.accumulator = 0;
+        if (this.dieTimer) {
+            clearTimeout(this.dieTimer);
+            this.dieTimer = null;
+        }
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+        this.loop();
+    }
+
+    togglePause() {
+        if (this.state === "running") {
+            this.state = "paused";
+            this.showOverlay(
+                "TẠM DỪNG",
+                "Nhấn <kbd>Space</kbd> để tiếp tục.",
+                "TIẾP TỤC",
+                false
+            );
+            if (this.rafId) cancelAnimationFrame(this.rafId);
+        } else if (this.state === "paused") {
+            this.state = "running";
+            this.hideOverlay();
+            this.lastFrameTime = performance.now();
+            this.loop();
+        }
+    }
+
+    gameOver() {
+        this.state = "gameover";
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+
+        const head = this.snake.segments[0];
+        if (head) {
+            const headEl = this.cells[head.y]?.[head.x];
+            if (headEl) headEl.classList.add("game-over-flash");
+            this.dieTimer = setTimeout(() => {
+                headEl?.classList.remove("game-over-flash");
+            }, DIE_FLASH_MS);
+        }
+
+        if (this.score > this.highScore) {
+            this.highScore = this.score;
+            saveHighScore(this.highScore);
+            this.updateScoreUI(true);
+            this.showOverlay(
+                "KỶ LỤC MỚI!",
+                `Điểm: <strong>${this.score}</strong><br/>Nhấn <kbd>Space</kbd> để chơi lại.`,
+                "CHƠI LẠI",
+                true
+            );
+        } else {
+            this.showOverlay(
+                "GAME OVER",
+                `Điểm: <strong>${this.score}</strong> &nbsp;·&nbsp; Kỷ lục: ${this.highScore}<br/>Nhấn <kbd>Space</kbd> để chơi lại.`,
+                "CHƠI LẠI",
+                true
+            );
+        }
+    }
+
 }
