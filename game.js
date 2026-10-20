@@ -1051,4 +1051,45 @@ class Game {
         }
     }
 
+    showOverlay(title, messageHtml, buttonText, isGameOver) {
+        this.ui.overlayTitle.textContent = title;
+        this.ui.overlayMessage.innerHTML = messageHtml;
+        this.ui.overlayAction.textContent = buttonText;
+        this.ui.overlay.classList.toggle("is-gameover", !!isGameOver);
+        this.ui.overlay.classList.add("overlay--visible");
+    }
+
+    hideOverlay() {
+        this.ui.overlay.classList.remove("overlay--visible");
+    }
+
+    setupOverlayButton() {
+        this.ui.overlayAction.addEventListener("click", () => {
+            if (this.state === "gameover" || this.state === "idle") {
+                this.start();
+            } else if (this.state === "paused") {
+                if (this.score === 0 && this.tickCount === 0) {
+                    this.start();
+                } else {
+                    this.togglePause();
+                }
+            } else if (this.state === "win") {
+                this.levels.loadLevel(0);
+                this.backToMenu();
+            }
+        });
+
+        if (this.ui.overlayBack) {
+            this.ui.overlayBack.addEventListener("click", () => {
+                this.backToMenu();
+            });
+        }
+    }
+
+    startLevel(index) {
+        this.levels.loadLevel(index);
+        this.hideMainMenu();
+        this.start();
+    }
+
 }
