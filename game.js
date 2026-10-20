@@ -1092,4 +1092,64 @@ class Game {
         this.start();
     }
 
+    backToMenu() {
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+        if (this.dieTimer) {
+            clearTimeout(this.dieTimer);
+            this.dieTimer = null;
+        }
+        this.state = "menu";
+        this.hideOverlay();
+        this.showMainMenu();
+    }
+
+    showMainMenu() {
+        if (this.ui.mainMenu) {
+            this.ui.mainMenu.classList.add("main-menu--visible");
+        }
+    }
+
+    hideMainMenu() {
+        if (this.ui.mainMenu) {
+            this.ui.mainMenu.classList.remove("main-menu--visible");
+        }
+    }
+
+    updateScoreUI(bumpHigh) {
+        this.ui.scoreEl.textContent = String(this.score);
+        this.ui.highScoreEl.textContent = String(this.highScore);
+        if (this.ui.levelEl) {
+            this.ui.levelEl.textContent = `${this.levels.currentIndex + 1}/${this.levels.total}`;
+        }
+        if (this.ui.goalEl) {
+            this.ui.goalEl.textContent = String(this.levels.current.goalScore);
+        }
+        this.ui.scoreEl.classList.add("bump");
+        setTimeout(() => this.ui.scoreEl.classList.remove("bump"), 200);
+        if (bumpHigh) {
+            this.ui.highScoreEl.classList.add("bump");
+            setTimeout(() => this.ui.highScoreEl.classList.remove("bump"), 250);
+        }
+        this.updateHpUI();
+    }
+
+    updateHpUI() {
+        const el = this.ui.hpEl;
+        const item = this.ui.hpItem;
+        if (!el) return;
+        if (this.maxHp <= 1) {
+            if (item) item.hidden = true;
+            el.textContent = "";
+            return;
+        }
+        if (item) item.hidden = false;
+        const hearts = "♥".repeat(Math.max(0, this.hp));
+        const lost = "♡".repeat(Math.max(0, this.maxHp - this.hp));
+        el.innerHTML =
+            `<span class="hp-full">${hearts}</span><span class="hp-empty">${lost}</span>`;
+    }
+
 }
