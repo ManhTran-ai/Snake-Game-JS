@@ -1152,4 +1152,281 @@ class Game {
             `<span class="hp-full">${hearts}</span><span class="hp-empty">${lost}</span>`;
     }
 
+    loop = () => {
+        const now = performance.now();
+        const delta = now - this.lastFrameTime;
+        this.lastFrameTime = now;
+        this.accumulator += delta;
+
+        const currentTickMs = this.tickInterval * this.powerUps.speedMultiplier();
+        this.powerUps.update(delta);
+
+        let safety = 5;
+        while (this.accumulator >= currentTickMs && safety-- > 0) {
+            this.accumulator -= currentTickMs;
+            this.tick();
+            if (this.state !== "running") return;
+        }
+
+        if (this.eatGlow > 0) {
+            this.eatGlow = Math.max(0, this.eatGlow - delta / 200);
+        }
+
+        this.render();
+        this.rafId = requestAnimationFrame(this.loop);
+    };
+
+    tick() {
+        this.tickCount++;
+
+        const snakeHead = this.snake.segments[0];
+        if (this.enemyManager) this.enemyManager.step(this.gridSize, snakeHead);
+
+        const nextHead = this.snake.advance();
+
+        if (this.snake.checkCollision(nextHead)) {
+            this.snake.revertAdvance();
+            if (this.takeDamage()) this.gameOver();
+            return;
+        }
+
+        if (this.snake.checkCollisionWithEnemies(this.enemyManager)) {
+            this.snake.revertAdvance();
+            if (this.takeDamage()) this.gameOver();
+            return;
+        }
+
+        if (
+            this.food.position &&
+            nextHead.x === this.food.position.x &&
+            nextHead.y === this.food.position.y
+        ) {
+            const type = this.food.type;
+            this.snake.eat(type.score);
+            this.score += type.score;
+            this.eatGlow = 1;
+            this.updateScoreUI(false);
+
+            switch (type.id) {
+                case "REVERSE":
+                    this.powerUps.activateReverse();
+                    this.showToast("🌀 REVERSE INPUT! (5s)");
+                    break;
+                case "SPEED":
+                    this.powerUps.activateSpeed();
+                    this.showToast("⚡ SPEED UP! (5s)");
+                    break;
+                default:
+                    break;
+            }
+
+            this.food.respawn(
+                this.snake,
+                this.snake.walls,
+                this.foodVariants,
+                this.portals
+            );
+
+            const result = this.levels.checkGoal();
+            if (result.finished) {
+                this.gameWin();
+                return;
+            }
+            if (result.advanced) {
+                this.showLevelComplete(result.level);
+                this.state = "paused";
+                if (this.rafId) cancelAnimationFrame(this.rafId);
+                return;
+            }
+        }
+
+        this.food.tick(
+            this.snake,
+            this.snake.walls,
+            this.foodVariants,
+            this.portals
+        );
+
+        if (
+            this.arena &&
+            this.shrinkInterval > 0 &&
+            this.tickCount % this.shrinkInterval === 0
+        ) {
+            const shrunk = this.arena.shrink();
+            if (shrunk) {
+                this.snake.walls = this.arena.getActiveWalls();
+                if (
+                    this.food.position &&
+                    !this.arena.isInBounds(this.food.position.x, this.food.position.y)
+                ) {
+                    this.food.respawn(
+                        this.snake,
+                        this.snake.walls,
+                        this.foodVariants,
+                        this.portals
+                    );
+                }
+                this.showToast(`📉 ARENA SHRINK! (${this.arena.area()} ô)`);
+            }
+        }
+
+        if (this.dynamicSpeed) {
+            const ds = this.dynamicSpeed;
+            const steps = Math.floor(this.score / ds.perScore);
+            this.tickInterval = Math.max(
+                ds.end,
+                ds.start - steps * ds.step
+            );
+        }
+    }
+
+    showToast(message) {
+        this.toast.message = message;
+        this.toast.until = performance.now() + 2000;
+        if (this.ui && this.ui.toastEl) {
+            this.ui.toastEl.textContent = message;
+            this.ui.toastEl.classList.add("is-visible");
+            if (this._toastTimer) clearTimeout(this._toastTimer);
+            this._toastTimer = setTimeout(() => {
+                this.ui.toastEl.classList.remove("is-visible");
+            }, 2000);
+        }
+    }
+
+    showLevelComplete(nextCfg) {
+        this.showOverlay(
+            "🎉 QUA MÀN!",
+            `Chuẩn bị vào <strong>Level ${nextCfg.id} — ${nextCfg.name}</strong><br/>` +
+            `Mục tiêu: <strong>${nextCfg.goalScore} điểm</strong><br/>` +
+            `Nhấn <kbd>Space</kbd> để bắt đầu.`,
+            `VÀO LEVEL ${nextCfg.id}`,
+            false
+        );
+    }
+
+    gameWin() {
+        this.state = "win";
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+        if (this.score > this.highScore) {
+            this.highScore = this.score;
+            saveHighScore(this.highScore);
+            this.updateScoreUI(true);
+        }
+        this.showOverlay(
+            "🏆 CHIẾN THẮNG!",
+            `Bạn đã hoàn thành tất cả ${LEVELS.length} level!<br/>` +
+            `Điểm cuối: <strong>${this.score}</strong>`,
+            "CHƠI LẠI TỪ ĐẦU",
+            true
+        );
+    }
+
+    render() {
+        for (let y = 0; y < GRID_SIZE; y++) {
+            for (let x = 0; x < GRID_SIZE; x++) {
+                const el = this.cells[y][x];
+                el.className = "cell";
+                delete el.dataset.direction;
+            }
+        }
+
+        if (this.food.position) {
+            const { x, y } = this.food.position;
+            const cell = this.cells[y][x];
+            cell.classList.add(this.food.type.cssClass);
+        }
+
+        if (this.walls && this.walls.length) {
+            for (const wall of this.walls) {
+                const el = this.cells[wall.y]?.[wall.x];
+                if (el) el.classList.add(CELL_CLASS.WALL);
+            }
+        }
+
+        if (this.portals && this.portals.length) {
+            for (let i = 0; i < this.portals.length; i++) {
+                const p = this.portals[i];
+                this.cells[p.a.y]?.[p.a.x]?.classList.add("cell--portal-a");
+                this.cells[p.b.y]?.[p.b.x]?.classList.add("cell--portal-b");
+            }
+        }
+
+        if (this.arena) {
+            for (let y = 0; y < this.gridSize; y++) {
+                for (let x = 0; x < this.gridSize; x++) {
+                    if (!this.arena.isInBounds(x, y)) {
+                        this.cells[y][x].classList.add(CELL_CLASS.ARENA_WALL);
+                    }
+                }
+            }
+        }
+
+        if (this.enemyManager && this.enemyManager.enemies.length) {
+            const dist = this.enemyPredictDistance ?? 2;
+            for (const e of this.enemyManager.enemies) {
+                for (const p of e.predict(this.gridSize, dist)) {
+                    const el = this.cells[p.y]?.[p.x];
+                    if (el) el.classList.add("cell--enemy-warning");
+                }
+            }
+            for (const e of this.enemyManager.enemies) {
+                const el = this.cells[e.position.y]?.[e.position.x];
+                if (el) {
+                    el.classList.add("cell--enemy");
+                    if (e.behavior === "chase") el.classList.add("cell--enemy-chase");
+                }
+            }
+        }
+
+        const segs = this.snake.segments;
+        const tongueOut =
+            this.tickCount % (TONGUE_FLICK_INTERVAL * 2) <
+            TONGUE_FLICK_INTERVAL;
+
+        for (let i = segs.length - 1; i >= 0; i--) {
+            const seg = segs[i];
+            const el = this.cells[seg.y][seg.x];
+
+            if (i === 0) continue;
+            if (i === segs.length - 1) {
+                el.classList.add(CELL_CLASS.TAIL);
+            } else {
+                el.classList.add(CELL_CLASS.BODY);
+            }
+        }
+
+        const head = segs[0];
+        if (head) {
+            const headEl = this.cells[head.y][head.x];
+            headEl.classList.add(CELL_CLASS.HEAD);
+            headEl.dataset.direction = directionLabel(this.snake.direction);
+            if (tongueOut) headEl.classList.add(CELL_CLASS.TONGUE_OUT);
+
+            if (this.isInvulnerable) {
+                const blink = Math.floor(performance.now() / 100) % 2 === 0;
+                if (blink) headEl.classList.add(CELL_CLASS.INVULNERABLE);
+            }
+        }
+
+        if (this.fog && this.fog.enabled && head) {
+            const visible = this.fog.visibleSet(head.x, head.y);
+            for (let y = 0; y < this.gridSize; y++) {
+                for (let x = 0; x < this.gridSize; x++) {
+                    if (!visible.has(`${x},${y}`)) {
+                        this.cells[y][x].classList.add("cell--fog");
+                    }
+                }
+            }
+        }
+
+        this.applyEatGlow();
+    }
+
+    applyEatGlow() {
+        if (this.eatGlow > 0) {
+            this.boardEl.style.filter = `brightness(${1 + this.eatGlow * 0.3})`;
+        } else {
+            this.boardEl.style.filter = "";
+        }
+    }
 }
