@@ -1430,3 +1430,89 @@ class Game {
         }
     }
 }
+
+const LEVEL_DESCRIPTIONS_VI = [
+    "Cỏ xanh — đi xuyên biên, không tường. Phù hợp người mới.",
+    "Hầm gạch — 5 cụm gạch cố định chắn đường.",
+    "Cổng dịch chuyển — 3 cặp portal + mồi bí ẩn (đảo phím, tăng tốc).",
+    "Lính canh — 3 con ma tuần tra + sương mù che tầm nhìn.",
+    "Ma trận thu hẹp — bàn chơi tự co lại + mồi nhảy + tốc độ tăng.",
+    "Săn bóng — 2 ma đuổi theo rắn, rắn có 3 máu + sân co siết nhanh. BOSS!",
+];
+
+function buildBoard(boardEl) {
+    const cells = [];
+    for (let y = 0; y < GRID_SIZE; y++) {
+        const row = [];
+        for (let x = 0; x < GRID_SIZE; x++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.x = String(x);
+            cell.dataset.y = String(y);
+            boardEl.appendChild(cell);
+            row.push(cell);
+        }
+        cells.push(row);
+    }
+    return cells;
+}
+
+function buildLevelMenu(gridEl, game) {
+    gridEl.innerHTML = "";
+    LEVELS.forEach((cfg, i) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `level-card theme-${cfg.theme}`;
+        card.dataset.level = String(cfg.id);
+        card.setAttribute("aria-label", `Chơi màn ${cfg.id}: ${cfg.name}`);
+        card.innerHTML = `
+            <span class="level-card__num">MÀN ${String(cfg.id).padStart(2, "0")}</span>
+            <span class="level-card__name">${cfg.name}</span>
+            <span class="level-card__desc">${LEVEL_DESCRIPTIONS_VI[i] ?? ""}</span>
+            <span class="level-card__meta">
+                Mục tiêu: <strong>${cfg.goalScore} điểm</strong>
+                · Tốc độ: <strong>${cfg.tickMs}ms</strong>
+            </span>
+            <span class="level-card__cta">CHƠI NGAY ▶</span>
+        `;
+        card.addEventListener("click", () => {
+            game.startLevel(i);
+        });
+        gridEl.appendChild(card);
+    });
+}
+
+function init() {
+    const boardEl = document.getElementById("game-board");
+    const cells = buildBoard(boardEl);
+
+    const ui = {
+        overlay: document.getElementById("overlay"),
+        overlayTitle: document.getElementById("overlay-title"),
+        overlayMessage: document.getElementById("overlay-message"),
+        overlayAction: document.getElementById("overlay-action"),
+        overlayBack: document.getElementById("overlay-back"),
+        scoreEl: document.getElementById("score"),
+        highScoreEl: document.getElementById("high-score"),
+        levelEl: document.getElementById("level"),
+        goalEl: document.getElementById("goal"),
+        hpEl: document.getElementById("hp"),
+        hpItem: document.getElementById("hp-item"),
+        toastEl: document.getElementById("toast"),
+        mainMenu: document.getElementById("main-menu"),
+        levelGrid: document.getElementById("level-grid"),
+    };
+
+    const game = new Game(boardEl, cells, ui);
+    window.__snakeGame = game;
+
+    buildLevelMenu(ui.levelGrid, game);
+    game.hideOverlay();
+    game.state = "menu";
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+} else {
+    init();
+}
